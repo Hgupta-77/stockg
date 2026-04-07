@@ -1,2 +1,2 @@
 # stockg
-Here a website to  predict the actual values  of the stocks 
+Here is my project UI but the actual backend Machine learning model running only on my Pc .
