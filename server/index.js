@@ -1,52 +1,88 @@
-// Load .env
-require('dotenv').config();
+// --------------------------------
+// Load Environment Variables
+// --------------------------------
+require("dotenv").config();
 
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+// --------------------------------
+// Import Packages
+// --------------------------------
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
 
+// --------------------------------
+// Create App
+// --------------------------------
 const app = express();
 
+// --------------------------------
 // Middlewares
+// --------------------------------
 app.use(express.json());
-app.use(cors());
-
-// Routes Import
-const authRoutes = require('./routes/auth');
-const sharesRoutes = require('./routes/shares');
-const subsRoutes = require('./routes/subscription');
-const stocksRoutes = require('./routes/stocks');  // 🔥 Live Stock API
-
-// --------------------------------
-// 🔥 MongoDB Connection
-// --------------------------------
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
   })
-  .then(() => console.log("✅ MongoDB Connected Successfully"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+);
 
 // --------------------------------
-// 🔥 Health Check Route
+// Routes Import
 // --------------------------------
-app.get('/', (req, res) => {
-  res.send({ ok: true, msg: 'Stock server running with MongoDB' });
+const authRoutes = require("./routes/auth");
+const sharesRoutes = require("./routes/shares");
+const subsRoutes = require("./routes/subscription");
+const stocksRoutes = require("./routes/stocks");
+
+// --------------------------------
+// MongoDB Connection
+// --------------------------------
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ MongoDB Connected Successfully");
+  } catch (error) {
+    console.error("❌ MongoDB Connection Error:", error.message);
+    process.exit(1);
+  }
+};
+
+connectDB();
+
+// --------------------------------
+// Health Check Route
+// --------------------------------
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    message: "Stock Server Running",
+  });
 });
 
 // --------------------------------
-// 🔥 API Routes
+// API Routes
 // --------------------------------
-app.use('/api/auth', authRoutes);
-app.use('/api/shares', sharesRoutes);
-app.use('/api/subscription', subsRoutes);
-app.use('/api/stocks', stocksRoutes);  // 👉 NIFTY / SENSEX / BANKNIFTY live
+app.use("/api/auth", authRoutes);
+app.use("/api/shares", sharesRoutes);
+app.use("/api/subscription", subsRoutes);
+app.use("/api/stocks", stocksRoutes);
 
 // --------------------------------
-// 🔥 Start Server
+// Global Error Handler
+// --------------------------------
+app.use((err, req, res, next) => {
+  console.error("Server Error:", err.message);
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+  });
+});
+
+// --------------------------------
+// Start Server
 // --------------------------------
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
-);
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});

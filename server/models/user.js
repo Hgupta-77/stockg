@@ -10,32 +10,41 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
+
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: [6, "Password must be at least 6 characters long"],
+      default: null, // ✅ Google login ke liye password optional
+      minlength: 6,
     },
+
+    googleId: {
+      type: String,
+      default: null, // ✅ Google OAuth user id
+    },
+
     planType: {
       type: String,
       enum: ["Free", "Premium"],
-      default: "Free", // ✅ Default plan
+      default: "Free",
     },
+
     createdAt: {
       type: Date,
       default: Date.now,
     },
+
     lastLogin: {
       type: Date,
-      default: null, // ✅ optional tracking for user activity
+      default: null,
     },
   },
   {
-    timestamps: true, // ✅ Automatically adds createdAt & updatedAt
-    versionKey: false, // ✅ Removes __v
+    timestamps: true,
+    versionKey: false,
   }
 );
 
-// ✅ Faster lookup for login & queries
+// Fast email lookup
 userSchema.index({ email: 1 });
 
 module.exports = mongoose.model("User", userSchema);
